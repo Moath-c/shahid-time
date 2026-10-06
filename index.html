@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shahid Time - Stream Live Movies &amp; Shows</title>
+  <meta name="description" content="Shahid Time — a movie streaming web application template built with Tailwind CSS." />
+
+  <!-- Tailwind CSS (CDN build for template/prototyping purposes) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            netflix: {
+              red: '#E50914',
+              darkred: '#B20710',
+              bg: '#141414',
+              panel: '#181818',
+              card: '#1f1f1f',
+              muted: '#b3b3b3',
+            },
+          },
+          fontFamily: {
+            sans: ['Inter', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'],
+          },
+          keyframes: {
+            fadeInUp: {
+              '0%': { opacity: '0', transform: 'translateY(24px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            pulseDot: {
+              '0%, 100%': { transform: 'scale(1)', opacity: '1' },
+              '50%': { transform: 'scale(1.35)', opacity: '.6' },
+            },
+          },
+          animation: {
+            'fade-in-up': 'fadeInUp .8s ease-out both',
+            'fade-in': 'fadeIn .6s ease-out both',
+            'pulse-dot': 'pulseDot 2s ease-in-out infinite',
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    body {
+      background-color: #141414;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Hide scrollbars on the horizontal movie rows while keeping them scrollable */
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* ---------- Hero ---------- */
+    .hero-vignette {
+      background: linear-gradient(
+          to top,
+          #141414 0%,
+          rgba(20, 20, 20, 0.75) 22%,
+          rgba(20, 20, 20, 0.25) 50%,
+          rgba(20, 20, 20, 0.1) 100%
+        ),
+        linear-gradient(to right, rgba(20, 20, 20, 0.92) 0%, rgba(20, 20, 20, 0.45) 45%, rgba(20, 20, 20, 0) 75%);
+    }
+
+    /* ---------- Movie card hover animations ---------- */
+    .movie-card {
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+      transform-origin: center center;
+      will-change: transform;
+    }
+
+    .movie-card:hover,
+    .movie-card:focus-visible {
+      transform: scale(1.12) translateY(-6px);
+      z-index: 30;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.75), 0 0 0 2px rgba(229, 9, 20, 0.65);
+      outline: none;
+    }
+
+    .movie-card .card-overlay {
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.3s ease 0.05s, transform 0.3s ease 0.05s;
+    }
+
+    .movie-card:hover .card-overlay,
+    .movie-card:focus-visible .card-overlay {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .movie-card .poster-img {
+      transition: filter 0.35s ease;
+    }
+
+    .movie-card:hover .poster-img {
+      filter: brightness(0.55);
+    }
+
+    /* Row arrow buttons */
+    .row-arrow {
+      opacity: 0;
+      transition: opacity 0.25s ease, background-color 0.25s ease, transform 0.2s ease;
+    }
+    .row-nav:hover .row-arrow,
+    .row-nav:focus-within .row-arrow {
+      opacity: 1;
+    }
+    .row-arrow:hover {
+      background-color: rgba(20, 20, 20, 0.85);
+      transform: scale(1.08);
+    }
+
+    /* Top nav gradient appears after scrolling */
+    #navbar {
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85) 10%, rgba(0, 0, 0, 0));
+      transition: background-color 0.4s ease, backdrop-filter 0.4s ease;
+    }
+    #navbar.scrolled {
+      background-color: rgba(20, 20, 20, 0.92);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    /* ---------- Live search: expanding navbar input ---------- */
+    #searchBox {
+      width: 2.25rem;
+      border-radius: 0.375rem;
+      overflow: hidden;
+      background-color: transparent;
+      border: 1px solid transparent;
+      transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                  background-color 0.3s ease, border-color 0.3s ease,
+                  box-shadow 0.3s ease;
+    }
+    #searchBox.search-open {
+      width: min(20rem, 55vw);
+      background-color: rgba(0, 0, 0, 0.82);
+      border-color: rgba(255, 255, 255, 0.35);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
+    }
+    #searchInput {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease 0.12s;
+    }
+    #searchBox.search-open #searchInput {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #searchClear {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    #searchBox.has-value #searchClear {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ---------- Home ⇄ search content transition ---------- */
+    .content-exit {
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.28s ease, transform 0.28s ease;
+    }
+
+    /* ---------- My List row (hidden until something is bookmarked) -------- */
+    #myListSection.is-empty {
+      display: none;
+    }
+
+    /* ---------- Profile dropdown (hidden/visible state transition) --------- */
+    #profileMenu {
+      visibility: hidden;
+      opacity: 0;
+      transform: translateY(-8px) scale(0.97);
+      transition: visibility 0.25s ease, opacity 0.25s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+    }
+    #profileMenu.open {
+      visibility: visible;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    /* Fade-in for lazily-rendered rows */
+    .row-reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .row-reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+
+<body class="bg-netflix-bg text-white font-sans selection:bg-netflix-red selection:text-white">
+  <!-- ============================================================
+       1. STICKY TRANSPARENT NAVIGATION BAR
+       ============================================================ -->
+  <header id="navbar" class="fixed top-0 left-0 right-0 z-50">
+    <nav class="mx-auto flex h-16 max-w-[1800px] items-center justify-between px-4 sm:px-6 lg:px-12">
+      <!-- Left: logo + links -->
+      <div class="flex items-center gap-6 lg:gap-8">
+        <!-- Logo placeholder -->
+        <a href="#" class="flex items-center gap-2 shrink-0" aria-label="Shahid Time Home">
+          <span class="grid h-8 w-8 place-items-center rounded-md bg-netflix-red text-sm font-black tracking-tighter shadow-lg shadow-netflix-red/30">
+            N
+          </span>
+          <span class="hidden text-xl font-bold tracking-wider text-red-600 sm:block">Shahid Time</span>
+        </a>
+
+        <!-- Desktop links -->
+        <ul class="hidden items-center gap-5 text-[15px] text-gray-200 md:flex lg:gap-7">
+          <li><a href="#" class="nav-link font-semibold text-white transition hover:text-gray-300" data-nav="home">Home</a></li>
+          <li><a href="#" class="nav-link transition hover:text-gray-300" data-nav="tv">TV Shows</a></li>
+          <li><a href="#" class="nav-link transition hover:text-gray-300" data-nav="movies">Movies</a></li>
+          <li><a href="#" class="nav-link transition hover:text-gray-300" data-nav="new">New &amp; Popular</a></li>
+          <li><a href="#" class="nav-link transition hover:text-gray-300" data-nav="list">My List</a></li>
+        </ul>
+      </div>
+
+      <!-- Right: search, bell, profile -->
+      <div class="flex items-center gap-4 sm:gap-5">
+        <!-- Live search: the magnifier expands into an input field -->
+        <div id="searchBox" class="relative flex h-9 items-center">
+          <button id="searchToggle" type="button" aria-label="Search" aria-expanded="false"
+            class="grid h-9 w-9 shrink-0 place-items-center text-white transition hover:text-gray-300">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+            </svg>
+          </button>
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Titles, people, genres"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Search movies"
+            class="h-9 w-full min-w-0 bg-transparent pr-8 text-sm text-white placeholder-gray-500 outline-none" />
+          <button id="searchClear" type="button" aria-label="Clear search"
+            class="absolute right-0.5 grid h-7 w-7 place-items-center rounded-full text-gray-400 transition hover:text-white">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        </div>
+
+        <button type="button" aria-label="Notifications" class="hidden text-white transition hover:text-gray-300 sm:block">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+        </button>
+
+        <!-- Mobile menu toggle -->
+        <button id="mobileMenuBtn" type="button" aria-label="Open menu" class="text-white md:hidden">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+
+        <!-- Profile icon + dropdown -->
+        <div class="relative">
+          <button
+            id="profileBtn"
+            type="button"
+            class="flex items-center gap-1.5"
+            aria-label="Profile menu"
+            aria-haspopup="true"
+            aria-expanded="false">
+            <span
+              class="grid h-8 w-8 place-items-center rounded-md bg-gradient-to-br from-sky-500 to-netflix-red text-xs font-bold shadow-md ring-1 ring-white/20 transition hover:ring-white/60">
+              JD
+            </span>
+            <svg class="hidden h-3 w-3 text-white sm:block" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M7 10l5 5 5-5z" />
+            </svg>
+          </button>
+
+          <!-- Floating dropdown menu -->
+          <div
+            id="profileMenu"
+            class="absolute right-0 top-full mt-3 w-56 origin-top-right rounded-md border border-white/10 bg-netflix-panel/95 p-1.5 shadow-2xl backdrop-blur-md"
+            role="menu"
+            aria-label="Profile menu">
+            <div class="border-b border-white/10 px-3 py-2.5 text-xs text-gray-400">
+              Signed in as <span class="font-semibold text-white">JD</span>
+            </div>
+            <button
+              type="button"
+              class="profile-item flex w-full items-center gap-3 rounded px-3 py-2.5 text-sm font-medium text-gray-200 transition hover:bg-white/10 hover:text-white"
+              data-profile-action="manage"
+              role="menuitem">
+              <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Manage Profiles
+            </button>
+            <button
+              type="button"
+              class="profile-item flex w-full items-center gap-3 rounded px-3 py-2.5 text-sm font-medium text-gray-200 transition hover:bg-white/10 hover:text-white"
+              data-profile-action="account"
+              role="menuitem">
+              <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Account
+            </button>
+            <button
+              type="button"
+              class="profile-item flex w-full items-center gap-3 rounded px-3 py-2.5 text-sm font-medium text-gray-200 transition hover:bg-white/10 hover:text-white"
+              data-profile-action="help"
+              role="menuitem">
+              <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z" />
+              </svg>
+              Help Centre
+            </button>
+            <div class="my-1 border-t border-white/10"></div>
+            <a
+              href="#"
+              class="profile-item flex w-full items-center gap-3 rounded px-3 py-2.5 text-sm font-semibold text-netflix-red transition hover:bg-white/10"
+              data-profile-action="signout"
+              role="menuitem">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Sign out
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Mobile dropdown menu -->
+    <div id="mobileMenu" class="hidden border-t border-white/10 bg-netflix-bg/95 px-6 py-4 backdrop-blur md:hidden">
+      <ul class="flex flex-col gap-3 text-gray-200">
+        <li><a href="#" class="nav-link block transition hover:text-white" data-nav="home">Home</a></li>
+        <li><a href="#" class="nav-link block transition hover:text-white" data-nav="tv">TV Shows</a></li>
+        <li><a href="#" class="nav-link block transition hover:text-white" data-nav="movies">Movies</a></li>
+        <li><a href="#" class="nav-link block transition hover:text-white" data-nav="new">New &amp; Popular</a></li>
+        <li><a href="#" class="nav-link block transition hover:text-white" data-nav="list">My List</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       2. CINEMATIC HERO SECTION
+       ============================================================ -->
+  <section id="hero" class="relative flex min-h-[85vh] items-end pb-24 pt-24 sm:min-h-[92vh] sm:pb-32">
+    <!-- Background poster image -->
+    <div class="absolute inset-0 -z-10 overflow-hidden">
+      <img
+        id="heroImage"
+        src="https://image.tmdb.org/t/p/original/9n2tJBplPbgR2ca05hS5CKXwP2c.jpg"
+        alt="Featured movie backdrop"
+        class="h-full w-full object-cover object-top"
+        onerror="this.onerror=null;this.src='https://placehold.co/1280x720/181818/E50914?text=No+Image';"
+      />
+      <div class="hero-vignette absolute inset-0"></div>
+    </div>
+
+    <div class="mx-auto w-full max-w-[1800px] px-4 sm:px-6 lg:px-12">
+      <div class="max-w-xl animate-fade-in-up">
+        <!-- Series badge / eyebrow -->
+        <p class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.25em] text-netflix-red">
+          <span class="h-2 w-2 rounded-full bg-netflix-red animate-pulse-dot"></span>
+          <span id="heroEyebrow">N Series</span>
+        </p>
+
+        <!-- Title -->
+        <h1 id="heroTitle" class="text-4xl font-black leading-[1.05] tracking-tight drop-shadow-[0_4px_18px_rgba(0,0,0,0.8)] sm:text-6xl lg:text-7xl">
+          Shadow Protocol
+        </h1>
+
+        <!-- Meta info -->
+        <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-gray-300">
+          <span id="heroMatch" class="font-semibold text-green-400">98% Match</span>
+          <span id="heroYear" class="text-gray-400">2026</span>
+          <span class="rounded border border-gray-400 px-1.5 py-0.5 text-xs text-gray-300">4K</span>
+          <span class="rounded border border-gray-400 px-1.5 py-0.5 text-xs text-gray-300">HDR</span>
+          <span id="heroDuration" class="text-gray-400">2h 14m</span>
+        </div>
+
+        <!-- Description -->
+        <p id="heroDescription" class="mt-4 max-w-lg text-base leading-relaxed text-gray-200 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] sm:text-lg">
+          A disgraced intelligence agent is pulled back into the shadows when a rogue satellite network
+          threatens to rewrite global history. With time collapsing, she must trust the one person who
+          betrayed her.
+        </p>
+
+        <!-- Action buttons -->
+        <div class="mt-7 flex flex-wrap items-center gap-3 sm:gap-4">
+          <button
+            id="heroPlayBtn"
+            type="button"
+            class="group flex items-center gap-2.5 rounded bg-white px-7 py-3 text-base font-bold text-black transition hover:bg-gray-200 hover:scale-105 active:scale-95 sm:text-lg">
+            <svg class="h-6 w-6 transition group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            Play
+          </button>
+
+          <button
+            id="heroInfoBtn"
+            type="button"
+            class="flex items-center gap-2.5 rounded bg-gray-500/70 px-7 py-3 text-base font-bold text-white backdrop-blur transition hover:bg-gray-500 hover:scale-105 active:scale-95 sm:text-lg">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" />
+              <path stroke-linecap="round" d="M12 16v-4m0-4h.01" />
+            </svg>
+            More Info
+          </button>
+
+          <!-- My List toggle (+ / ✓) -->
+          <button
+            id="heroListBtn"
+            type="button"
+            aria-label="Add to My List"
+            class="flex items-center gap-2.5 rounded-full border border-gray-400/70 bg-gray-600/40 px-6 py-3.5 text-base font-bold text-white backdrop-blur transition hover:scale-105 hover:bg-gray-500/60 active:scale-95 sm:text-lg">
+            <span id="heroListIcon" class="grid h-6 w-6 place-items-center">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" d="M12 5v14M5 12h14" />
+              </svg>
+            </span>
+            My List
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll hint -->
+    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce text-gray-400">
+      <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       3. HORIZONTALLY SCROLLABLE MOVIE CATEGORIES
+       Populated dynamically by app.js via ui.js (renderFeed)
+       ============================================================ -->
+  <main class="relative z-10 -mt-16 pb-20">
+    <!-- ============================================================
+         "MY LIST" ROW — sits right below the Hero, hidden by default.
+         Revealed only when at least one movie is bookmarked.
+         ============================================================ -->
+    <section id="myListSection" class="row-nav row-reveal is-empty group/row" aria-label="My List">
+      <div class="mx-auto flex max-w-[1800px] items-center justify-between px-4 pb-3 sm:px-6 lg:px-12">
+        <h2 class="text-lg font-bold tracking-tight text-gray-100 sm:text-2xl">My List</h2>
+        <div class="flex items-center gap-2 text-xs font-semibold text-gray-400">
+          <span class="text-netflix-red">✓</span>
+        </div>
+      </div>
+
+      <div class="relative px-4 sm:px-6 lg:px-12">
+        <!-- Left arrow -->
+        <button type="button" data-scroll="left" aria-label="Scroll My List left"
+          class="row-arrow absolute left-0 top-1/2 z-40 hidden h-24 w-10 -translate-y-1/2 items-center justify-center rounded-r-md bg-black/60 text-white md:flex">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        <!-- Bookmark cards injected here by ui.js (refreshMyListUI) -->
+        <div id="myListStrip" data-strip style="scroll-behavior: smooth;"
+          class="no-scrollbar flex gap-2.5 overflow-x-auto overflow-y-visible py-4 pr-4 sm:gap-3.5"></div>
+
+        <!-- Right arrow -->
+        <button type="button" data-scroll="right" aria-label="Scroll My List right"
+          class="row-arrow absolute right-0 top-1/2 z-40 hidden h-24 w-10 -translate-y-1/2 items-center justify-center rounded-l-md bg-black/60 text-white md:flex">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <div id="rowsContainer" class="space-y-10 sm:space-y-14">
+      <!-- Rows injected here by ui.js (renderFeed) -->
+    </div>
+
+    <!-- Live search results — populated by ui.js while typing -->
+    <section id="searchSection" class="hidden pb-6 pt-36" aria-live="polite">
+      <div id="searchRowsContainer"></div>
+    </section>
+
+    <!-- Fallback / noscript content -->
+    <noscript>
+      <p class="px-6 text-center text-gray-400">
+        Enable JavaScript to browse the movie catalogue rows.
+      </p>
+    </noscript>
+  </main>
+
+  <!-- ============================================================
+       FOOTER
+       ============================================================ -->
+  <footer class="border-t border-white/5 bg-netflix-bg px-4 py-12 text-gray-500 sm:px-6 lg:px-12">
+    <div class="mx-auto max-w-[1800px]">
+      <div class="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:grid-cols-6">
+        <div class="col-span-2 flex max-w-xl flex-1 items-start gap-4 sm:col-span-4 lg:col-span-2">
+          <span class="shrink-0 text-lg font-bold tracking-wider text-red-600">Shahid Time</span>
+          <p class="min-w-0 flex-1 text-sm leading-relaxed">
+            A template streaming interface built with Tailwind CSS. Movie data and imagery are served live from the TMDB API.
+          </p>
+        </div>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="transition hover:text-white">Audio Description</a></li>
+          <li><a href="#" class="transition hover:text-white">Investor Relations</a></li>
+          <li><a href="#" class="transition hover:text-white">Legal Notices</a></li>
+        </ul>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="transition hover:text-white">Help Centre</a></li>
+          <li><a href="#" class="transition hover:text-white">Jobs</a></li>
+          <li><a href="#" class="transition hover:text-white">Cookie Preferences</a></li>
+        </ul>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="transition hover:text-white">Gift Cards</a></li>
+          <li><a href="#" class="transition hover:text-white">Terms of Use</a></li>
+          <li><a href="#" class="transition hover:text-white">Corporate Information</a></li>
+        </ul>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="transition hover:text-white">Media Centre</a></li>
+          <li><a href="#" class="transition hover:text-white">Privacy</a></li>
+          <li><a href="#" class="transition hover:text-white">Contact Us</a></li>
+        </ul>
+      </div>
+      <p class="mt-10 text-xs">&copy; 2026 Shahid Time Template — built for demonstration purposes only.</p>
+    </div>
+  </footer>
+
+  <!-- ============================================================
+       DETAILED MOVIE INFO OVERLAY (Shahid Time details view)
+       ============================================================ -->
+  <div id="detailModal" class="fixed inset-0 z-[60] hidden items-center justify-center overflow-y-auto bg-black/80 p-4 py-10 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Movie details">
+    <div id="detailPanel" class="relative w-full max-w-3xl overflow-hidden rounded-xl bg-netflix-panel shadow-2xl ring-1 ring-white/10 animate-fade-in-up">
+      <!-- Prominent background backdrop image panel -->
+      <div class="relative h-60 w-full overflow-hidden sm:h-80">
+        <img id="modalImage" src="" alt="" class="h-full w-full object-cover object-top"
+          onerror="this.onerror=null;this.src='https://placehold.co/1280x720/181818/E50914?text=No+Image';" />
+        <div class="absolute inset-0 bg-gradient-to-t from-netflix-panel via-netflix-panel/30 to-transparent"></div>
+
+        <!-- Title + italic tagline over the backdrop -->
+        <div class="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+          <h3 id="modalTitle" class="text-3xl font-black leading-tight tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] sm:text-4xl"></h3>
+          <p id="modalTagline" class="mt-1 hidden text-sm italic text-gray-400"></p>
+        </div>
+
+        <!-- Floating 'X' close button -->
+        <button id="modalClose" type="button" aria-label="Close details"
+          class="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-black/70 text-white ring-1 ring-white/20 transition hover:rotate-90 hover:bg-netflix-red">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Organized content columns -->
+      <div class="grid gap-6 p-6 sm:grid-cols-3 sm:p-8">
+        <!-- Column 1–2: meta, genre pills, plot -->
+        <div class="sm:col-span-2">
+          <div class="flex flex-wrap items-center gap-3 text-sm">
+            <span id="modalMatch" class="font-semibold text-green-400"></span>
+            <span id="modalYear" class="text-gray-400"></span>
+            <span id="modalDuration" class="text-gray-400"></span>
+            <span class="rounded border border-gray-500 px-1.5 text-xs text-gray-300">HD</span>
+          </div>
+
+          <!-- Genre pill badges -->
+          <div id="modalGenres" class="mt-4 flex flex-wrap gap-2"></div>
+
+          <p id="modalOverview" class="mt-4 text-sm leading-relaxed text-gray-300"></p>
+        </div>
+
+        <!-- Column 3: facts -->
+        <aside class="space-y-3 border-t border-white/10 pt-4 text-xs sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
+          <p><span class="block text-gray-500">Status</span><span id="modalStatus" class="text-gray-300"></span></p>
+          <p><span class="block text-gray-500">Original Language</span><span id="modalLanguage" class="uppercase text-gray-300"></span></p>
+          <p><span class="block text-gray-500">Original Title</span><span id="modalOriginalTitle" class="text-gray-300"></span></p>
+          <p><span class="block text-gray-500">Release Date</span><span id="modalReleaseDate" class="text-gray-300"></span></p>
+        </aside>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex flex-wrap gap-3 px-6 pb-6 sm:px-8 sm:pb-8">
+        <button id="modalPlayBtn" type="button" class="flex items-center gap-2 rounded bg-white px-5 py-2.5 font-bold text-black transition hover:bg-gray-200">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+          Play
+        </button>
+        <button id="modalListBtn" type="button" class="flex items-center gap-2 rounded bg-gray-600/70 px-5 py-2.5 font-bold text-white transition hover:bg-gray-600">
+          <span id="modalListIcon" class="grid h-5 w-5 place-items-center">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14M5 12h14" /></svg>
+          </span>
+          My List
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TRAILER POPUP MODAL (YouTube embed) — hidden by default
+       ============================================================ -->
+  <div
+    id="trailerModal"
+    class="fixed inset-0 z-[70] hidden items-center justify-center bg-black/85 p-4 backdrop-blur-md"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Trailer player">
+    <!-- YouTube iframe container -->
+    <div class="relative w-full max-w-5xl">
+      <!-- Floating close button -->
+      <button
+        id="trailerClose"
+        type="button"
+        aria-label="Close trailer"
+        class="absolute -top-14 right-0 grid h-11 w-11 place-items-center rounded-full bg-netflix-panel/90 text-white ring-1 ring-white/25 transition hover:scale-105 hover:bg-netflix-red">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
+
+      <div class="relative aspect-video w-full overflow-hidden rounded-lg bg-black shadow-2xl ring-1 ring-white/10">
+        <iframe
+          id="trailerFrame"
+          class="absolute inset-0 h-full w-full"
+          src=""
+          title="Movie trailer"
+          allow="autoplay; encrypted-media; picture-in-picture"
+          allowfullscreen></iframe>
+
+        <!-- Loading / no-trailer status overlay -->
+        <div id="trailerStatus" class="absolute inset-0 hidden place-items-center bg-netflix-panel/95 px-6 text-center">
+          <span id="trailerStatusText" class="animate-pulse text-sm text-gray-300">Loading trailer…</span>
+        </div>
+      </div>
+
+      <p id="trailerTitle" class="mt-3 text-center text-sm font-semibold text-gray-300"></p>
+    </div>
+  </div>
+
+  <!-- Transient toast (empty-state nudges + demo link acknowledgements) -->
+  <div
+    id="toast"
+    class="pointer-events-none fixed bottom-6 left-1/2 z-[80] -translate-x-1/2 translate-y-4 rounded-full bg-netflix-panel/95 px-5 py-3 text-sm font-medium text-white opacity-0 shadow-2xl ring-1 ring-white/10 backdrop-blur transition-all duration-300"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
