@@ -111,13 +111,18 @@ export const GENRE_MAP = { 28: "Action", 35: "Comedy", /* … */ };
 
 ### Step 3 — Add your unique TMDB API key
 
-Replace the placeholder value on the first line of `config.js`:
+Copy `config.example.js` to `config.js` and paste your key into the placeholder on the first line:
 
-```js
-export const TMDB_API_KEY = "d2a3f9b81c4e7f0a5b6c1d2e3f4a5b6c7d8e9f0a1"; // <-- your key
+```bash
+cp config.example.js config.js
 ```
 
-> ⚠️ Do **not** paste your key into `index.html` or any template that serves it to the public. Keeping it in the module file is fine for local development.
+```js
+// config.js (first line)
+export const TMDB_API_KEY = "YOUR_TMDB_API_KEY_GOES_HERE"; // <-- paste your key
+```
+
+> ⚠️ `config.js` is git-ignored, so your key is **never committed to the repository**. Do **not** paste your key into `index.html` or any other file that is tracked in git.
 
 ### Step 4 — Launch the app
 
