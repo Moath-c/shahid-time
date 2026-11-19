@@ -44,6 +44,10 @@ Instead of one monolithic script, the application is cleanly split into focused 
 - Floating **profile dropdown** (Manage Profiles, Account, Help Centre, Sign out) that opens on click and closes on outside-click or **Esc**.
 - Polished toast notifications for empty states and demo actions.
 
+## 🎬 Project Demo
+
+https://github.com/user-attachments/assets/9c20c6b8-5fa8-48ad-95bb-16f51f706ecf
+
 > **Bonus polish:** skeleton loading rows, hover-scale card animations, horizontal scroll arrows, IntersectionObserver row reveals, image fallbacks, and full keyboard accessibility on cards.
 
 ---
